@@ -82,11 +82,13 @@ int main(int argc, char *argv[])
 
     while(1) {
         fgets(buf, MAXDATASIZE, stdin);
-        if (strcmp(buf, "exit") == 0)
+        if (strcmp(buf, "exit\n") == 0)
             break;
 
-        if (send(sockfd, buf, strlen(buf), 0) == -1)
+        if (send(sockfd, buf, strlen(buf), 0) == -1) {
             perror("send");
+            exit(1);
+        }
 
         if ((numbytes = recv(sockfd, buf, MAXDATASIZE-1, 0)) == -1) {
             perror("recv");
