@@ -1,6 +1,7 @@
 TARGET_EXEC := WebServer WebClient
 
 SRCS := WebServer.c WebClient.c
+OBJS := WebServer.o WebClient.o
 
 CC := gcc
 OPTS := -Wall -O

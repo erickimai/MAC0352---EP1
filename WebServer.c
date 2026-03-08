@@ -16,7 +16,7 @@
 
 #define BACKLOG 10
 
-#define MAXDATASIZE 100
+#define MAXDATASIZE 1000
 
 #define MAXRESOURCES 100
 
@@ -24,6 +24,7 @@ typedef struct {
     int reserved;
     char *id; 
     char *value;
+    int reserved_by;
 } Resource;
 
 typedef struct {
@@ -47,65 +48,86 @@ void *parser(void *args) {
     int numbytes;
     char *token;
 
-    if ((numbytes = recv(a->sockfd, buf, MAXDATASIZE - 1, 0)) == -1) {
-        perror("recv");
-        exit(1);
-    }
+    while((numbytes = recv(a->sockfd, buf, MAXDATASIZE - 1, 0)) > 0) {
+        buf[numbytes] = '\0';
+        printf("received : %s\n", buf);
 
-    buf[numbytes] = '\0';
-    printf("received : %s\n", buf);
+        token = strtok(buf, " ");
 
-    token = strtok(buf, " ");
-
-    while (token != NULL) {
-        pthread_mutex_lock(a->lock);
-        if (strcmp(token, "GET") == 0) {
-            token = strtok(NULL, " ");
-            //return resource->value
-        }
-        else if (strcmp(token, "CREATE") == 0) {
-            token = strtok(NULL, " ");
-            Resource new_resource;
-            new_resource.id = strdup(token);
-            token = strtok(NULL, "\n");
-            new_resource.value = strdup(token);
-            int i;
-            for (i = 0; i < MAXRESOURCES; i++) {
-                if (a->resources[i].id == NULL) {
-                    a->resources[i] = new_resource;
-                    if (send(a->sockfd, "resource created", 16, 0) == -1)
+        while (token != NULL) {
+            pthread_mutex_lock(a->lock);
+            if (strcmp(token, "GET") == 0) {
+                token = strtok(NULL, " ");
+                //return resource->value
+            }
+            else if (strcmp(token, "CREATE") == 0) {
+                token = strtok(NULL, " ");
+                Resource new_resource;
+                new_resource.id = strdup(token);
+                token = strtok(NULL, "\n");
+                new_resource.value = strdup(token);
+                new_resource.reserved_by = a->sockfd;
+                int i;
+                for (i = 0; i < MAXRESOURCES; i++) {
+                    if (a->resources[i].id == NULL) {
+                        a->resources[i] = new_resource;
+                        if (send(a->sockfd, "resource created\n", 16, 0) == -1)
+                            perror("send");
+                        break;
+                    }
+                }
+                if (i == MAXRESOURCES) 
+                if (send(a->sockfd, "ERROR: full of resources\n", 24, 0) == -1)    
                         perror("send");
-                    break;
+            }
+            else if (strcmp(token, "SET") == 0) {
+                token = strtok(NULL, " ");
+                //set resource
+            }
+            else if (strcmp(token, "RESERVE") == 0) {
+                token = strtok(NULL, " ");
+                //reserve resource
+            }
+            else if (strcmp(token, "RELEASE") == 0) {
+                token = strtok(NULL, " ");
+                //release resource
+            }
+            else if (strcmp(token, "LIST\n") == 0) {
+                char response[MAXDATASIZE] = "";
+                char buffer[MAXDATASIZE] = "";
+                               
+                for (int i = 0; i < 100; i++) {
+                    if (a->resources[i].id != NULL) {
+                        size_t space_left = sizeof(buffer) - strlen(buffer) - 1;
+                        snprintf(response, sizeof(response), "id: %s value: %s reserved: %d\n", 
+                        a->resources[i].id, a->resources[i].value, a->resources[i].reserved);
+                        strncat(buffer, response, space_left);
+                    }
+                }
+
+                if (send(a->sockfd, buffer, strlen(buffer), 0) == -1) {
+                    perror("send");
                 }
             }
-            if (i == MAXRESOURCES) 
-               if (send(a->sockfd, "ERROR: full of resources", 24, 0) == -1)    
+            else if (strcmp(token, "EXIT\n") == 0) {
+                if (send(a->sockfd, "connection ended\n", 17, 0) == -1)
                     perror("send");
-        }
-        else if (strcmp(token, "SET") == 0) {
+                close(a->sockfd);
+                pthread_mutex_unlock(a->lock);
+                free(a);
+                return NULL;
+            }
+            else {
+                fprintf(stderr, "invalid request \n");
+            }
             token = strtok(NULL, " ");
-            //set resource
+            pthread_mutex_unlock(a->lock);
         }
-        else if (strcmp(token, "RESERVE") == 0) {
-            token = strtok(NULL, " ");
-            //reserve resource
-        }
-        else if (strcmp(token, "RELEASE") == 0) {
-            token = strtok(NULL, " ");
-            //release resource
-        }
-        else if (strcmp(token, "LIST") == 0) {
-            token = strtok(NULL, " ");
-            //list resource
-        }
-        else {
-            fprintf(stderr, "invalid request \n");
-            exit(1);
-        }
-        token = strtok(NULL, " ");
-        pthread_mutex_unlock(a->lock);
     }
+    close(a->sockfd);
+    pthread_mutex_unlock(a->lock);
     free(a);
+    return NULL;
 }
 
 int main (void) {
