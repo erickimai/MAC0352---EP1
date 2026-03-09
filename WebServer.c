@@ -85,12 +85,28 @@ void *parser(void *args) {
                 //set resource
             }
             else if (strcmp(token, "RESERVE") == 0) {
-                token = strtok(NULL, " ");
-                //reserve resource
+                token = strtok(NULL, "\n");
+                if (a->resources[atoi(token)].reserved == 0) {
+                    a->resources[atoi(token)].reserved = 1;
+                    if (send(a->sockfd, "resource reserved\n", 17, 0) == -1)    
+                        perror("send");
+                }
+                else {
+                    if (send(a->sockfd, "ERROR: Resource already reserved\n", 32, 0) == -1)    
+                        perror("send");
+                }
             }
             else if (strcmp(token, "RELEASE") == 0) {
                 token = strtok(NULL, " ");
-                //release resource
+                if (a->resources[atoi(token)].reserved == 1) {
+                    a->resources[atoi(token)].reserved = 0;
+                    if (send(a->sockfd, "resource released\n", 17, 0) == -1)    
+                        perror("send");
+                }
+                else {
+                    if (send(a->sockfd, "ERROR: Resource not reserved\n", 28, 0) == -1)    
+                        perror("send");
+                }
             }
             else if (strcmp(token, "LIST\n") == 0) {
                 char response[MAXDATASIZE] = "";
@@ -99,13 +115,13 @@ void *parser(void *args) {
                 for (int i = 0; i < 100; i++) {
                     if (a->resources[i].id != NULL) {
                         size_t space_left = sizeof(buffer) - strlen(buffer) - 1;
-                        snprintf(response, sizeof(response), "id: %s value: %s reserved: %d\n", 
+                        snprintf(response, sizeof(response), "id: %s \nvalue: %s \nreserved: %d\n\n", 
                         a->resources[i].id, a->resources[i].value, a->resources[i].reserved);
                         strncat(buffer, response, space_left);
                     }
                 }
 
-                if (send(a->sockfd, buffer, strlen(buffer), 0) == -1) {
+                if (send(a->sockfd, buffer, strlen(buffer) - 2, 0) == -1) {
                     perror("send");
                 }
             }
@@ -119,9 +135,14 @@ void *parser(void *args) {
             }
             else {
                 fprintf(stderr, "invalid request \n");
+                pthread_mutex_unlock(a->lock);
+                if (send(a->sockfd, "ERROR: invalid request\n", 22, 0) == -1)
+                    perror("send");
+                break;
             }
             token = strtok(NULL, " ");
             pthread_mutex_unlock(a->lock);
+            break;
         }
     }
     close(a->sockfd);
