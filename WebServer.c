@@ -166,15 +166,25 @@ void *parser(void *args) {
              */
             else if (strcmp(token, "RESERVE") == 0) {
                 token = strtok(NULL, "\n");           /* token = index as string */
-                if (a->resources[atoi(token)].reserved == 0) {
-                    a->resources[atoi(token)].reserved = 1;
-                    a->resources[atoi(token)].reserved_by = a->sockfd;
-                    if (send(a->sockfd, "resource reserved\n", 17, 0) == -1)
-                        perror("send");
-                } else {
-                    if (send(a->sockfd, "ERROR: Resource already reserved\n", 32, 0) == -1)
-                        perror("send");
+                int found = 0;
+                for (int i = 0; i < MAXRESOURCES; i++) {
+                    if (a->resources[i].id != NULL && !strcmp(token, a->resources[i].id)) {
+                        if (a->resources[i].reserved == 0) {
+                            a->resources[i].reserved = 1;
+                            a->resources[i].reserved_by = a->sockfd;
+                            if (send(a->sockfd, "resource reserved\n", 17, 0) == -1)
+                                perror("send");
+                        } else {
+                            if (send(a->sockfd, "ERROR: Resource already reserved\n", 32, 0) == -1)
+                                perror("send");
+                        }
+                        found = 1;
+                        break;
+                    }
                 }
+                if (found == 0)
+                    if (send(a->sockfd, "ERROR: Resource doesn`t exist\n", 30, 0) == -1)
+                        perror("send");
             }
 
             /* ---- RELEASE <index> ----
@@ -183,18 +193,27 @@ void *parser(void *args) {
              *          "RELEASE 0\n" (not reserved) → "ERROR: Resource not reserved\n"
              */
             else if (strcmp(token, "RELEASE") == 0) {
-                token = strtok(NULL, " ");            /* token = index as string */
-                if (a->resources[atoi(token)].reserved == 1) {
-                    a->resources[atoi(token)].reserved = 0;
-                    a->resources[atoi(token)].reserved_by = 0;
-                    if (send(a->sockfd, "resource released\n", 17, 0) == -1)
-                        perror("send");
-                } else {
-                    if (send(a->sockfd, "ERROR: Resource not reserved\n", 28, 0) == -1)
+                token = strtok(NULL, "\n");            /* token = index as string */
+                int found = 0;
+                for (int i = 0; i < MAXRESOURCES; i++) {
+                    if (a->resources[i].id != NULL && !strcmp(token, a->resources[i].id)) {
+                        if (a->resources[i].reserved == 1) {
+                            a->resources[i].reserved = 0;
+                            if (send(a->sockfd, "resource released\n", 17, 0) == -1)
+                                perror("send");
+                        }
+                        else { 
+                            if (send(a->sockfd, "ERROR: Resource not reserved\n", 28, 0) == -1)
+                                perror("send");
+                        }
+                        found = 1;
+                    }
+                }
+                if (found == 0) {
+                    if (send(a->sockfd, "ERROR: Resource doesn`t exist\n", 30, 0) == -1)
                         perror("send");
                 }
             }
-
             /* ---- LIST ----
              * Sends a formatted list of all existing resources.
              * Example response:
@@ -263,7 +282,7 @@ void *parser(void *args) {
         if (a->resources[i].reserved_by == a->sockfd) {
             a->resources[i].reserved = 0;
             a->resources[i].reserved_by = 0;
-            printf("server: auto-released resource %s after client disconnect\n",
+            printf("server: auto-released resource '%s' after client disconnect\n",
                    a->resources[i].id);
         }
     }
@@ -331,7 +350,7 @@ int main(void) {
     }
 
     printf("server: waiting for connections on port %s...\n", PORT);
-
+    fflush(stdout);
     /*
      * Main accept loop — waits for incoming connections.
      * Each new client gets its own detached thread running parser().
@@ -357,6 +376,7 @@ int main(void) {
         inet_ntop(their_addr.ss_family,
             get_in_addr((struct sockaddr *)&their_addr), s, sizeof s);
         printf("server: got connection from %s (sockfd=%d)\n", s, new_fd);
+        fflush(stdout);
 
         /* Detach so thread cleans itself up when it returns */
         pthread_detach(thread);
