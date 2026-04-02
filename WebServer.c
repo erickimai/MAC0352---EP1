@@ -77,8 +77,48 @@ void *parser(void *args) {
 
         /* ---- GET <id> ---- */
         if (strcmp(token, "GET") == 0) {
-            send(a->sockfd, "ERROR: GET not yet implemented\n",
-                 strlen("ERROR: GET not yet implemented\n"), 0); 
+            char *id_token = strtok_r(NULL, " ", &saveptr);
+
+            if (id_token == NULL) {
+                send(a->sockfd, "ERROR: usage: GET <id>\n", 
+                     strlen("ERROR: usage: GET <id>\n"), 0);
+                pthread_mutex_unlock(a->lock);
+                continue;
+            }
+
+            char response[MAXDATASIZE];
+            int found = 0;
+
+            for (int i = 0; i < MAXRESOURCES; i++) {
+                if (a->resources[i].id != NULL &&
+                    strcmp(id_token, a->resources[i].id) == 0) {
+                    
+                    if (a->resources[i].value == NULL) {
+                        if (send(a->sockfd, "resource found with NULL value\n",
+                                strlen("resource found with NULL value\n"), 0) == -1)
+                            perror("send");
+                    }
+                    else {
+                        snprintf(response, sizeof(response),
+                                "resource with id %s has value %s\n",
+                                id_token,
+                                a->resources[i].value);
+                    }
+                    found = 1;
+                    break; /* value is unique — stop after first match */
+                }
+            }
+
+            if (found == 0) {
+                if (send(a->sockfd, "ERROR: Resource doesn't exist\n",
+                         strlen("ERROR: Resource doesn't exist\n"), 0) == -1) 
+                    perror("send");
+            }
+            else {
+                if (send(a->sockfd, response,
+                        strlen(response), 0) == -1)
+                    perror("send");
+            }
         }
 
         /* ---- CREATE <id> <value> ---- */
@@ -121,8 +161,51 @@ void *parser(void *args) {
 
         /* ---- SET <id> <value> ---- */
         else if (strcmp(token, "SET") == 0) {
-            send(a->sockfd, "ERROR: SET not yet implemented\n",
-                 strlen("ERROR: SET not yet implemented\n"), 0); 
+            char *id_token    = strtok_r(NULL, " ", &saveptr);  
+            char *value_token = strtok_r(NULL, "\n", &saveptr); /* rest of line */
+
+            if (id_token == NULL || value_token == NULL) {
+                send(a->sockfd, "ERROR: usage: SET <id> <value>\n",
+                     strlen("ERROR: usage: SET <id> <value>\n"), 0);
+                pthread_mutex_unlock(a->lock);
+                continue;
+            }
+
+            int i;
+            for (i = 0; i < MAXRESOURCES; i++) {
+                if (a->resources[i].id != NULL &&
+                    strcmp(id_token, a->resources[i].id) == 0) {
+
+                    if (a->resources[i].reserved_by == a->sockfd) {
+                        free(a->resources[i].value);
+                        a->resources[i].value = strdup(value_token);
+
+                        if (send(a->sockfd, "value changed\n",
+                                strlen("value changed\n"), 0) == -1) 
+                            perror("send");
+                        break;
+                    }
+                    else {
+                        if (a->resources[i].reserved == 0) {
+                            if (send(a->sockfd, "ERROR: resource not reserved\n",
+                                    strlen("ERROR: resource not reserved\n"), 0) == -1) 
+                                perror("send");
+                            break;
+                        } else {
+                            if (send(a->sockfd, "ERROR: resource not reserved by you\n",
+                                    strlen("ERROR: resource not reserved by you\n"), 0) == -1) 
+                                perror("send");
+                            break;
+                        }
+                    }
+                }
+            }
+            
+            if (i == MAXRESOURCES) {
+                if (send(a->sockfd, "ERROR: resource not found\n",
+                        strlen("ERROR: resource not found\n"), 0) == -1)
+                    perror("send");
+            }
         }
 
         else if (strcmp(token, "RESERVE") == 0) {
