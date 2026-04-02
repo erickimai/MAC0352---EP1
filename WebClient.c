@@ -94,7 +94,7 @@ int main(int argc, char *argv[])
         }
 
         buf[numbytes] = '\0';
-        if (strcmp(buf, "connection ended") == 0)
+        if (strcmp(buf, "connection ended\n") == 0)
             return 0;
 
         printf("client: received '%s'\n",buf);

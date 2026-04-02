@@ -33,6 +33,7 @@
 #define BACKLOG 10
 #define MAXDATASIZE 1000
 #define MAXRESOURCES 100
+#define LOGFILE "WebServer.log"
 
 typedef struct {
     int reserved;
@@ -46,6 +47,17 @@ typedef struct {
     pthread_mutex_t *lock;
     Resource *resources;
 } ThreadArgs;
+
+void logMessage(char* msg){
+    FILE* f = fopen(LOGFILE,"a");
+    
+    time_t t = time(NULL);
+    struct tm tm = *localtime(&t);
+    fprintf(f,"[%d-%02d-%02d %02d:%02d:%02d]:\t",tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec);
+    fprintf(f,"%s\n",msg);
+
+    fclose(f);
+}
 
 void *get_in_addr(struct sockaddr *sa)
 {
@@ -71,9 +83,18 @@ void *parser(void *args) {
 
         token = strtok_r(buf, " ", &saveptr); 
 
-        if (token == NULL) continue; /* empty line — ignore and wait for next recv */
-
         pthread_mutex_lock(a->lock);
+
+        if(token == NULL) { /* empty line — ignore and wait for next recv */
+            logMessage("ERROR: invalid request null message");
+            if (send(a->sockfd, "ERROR: invalid request\n",
+                     strlen("ERROR: invalid request\n"), 0) == -1) 
+                perror("send");
+            pthread_mutex_unlock(a->lock);
+
+            continue;
+        } 
+
 
         /* ---- GET <id> ---- */
         if (strcmp(token, "GET") == 0) {
@@ -110,11 +131,13 @@ void *parser(void *args) {
             }
 
             if (found == 0) {
+                logMessage("ERROR: Client tried to get a resource that doesn't exit");
                 if (send(a->sockfd, "ERROR: Resource doesn't exist\n",
                          strlen("ERROR: Resource doesn't exist\n"), 0) == -1) 
                     perror("send");
             }
             else {
+                logMessage("Client got a resource");
                 if (send(a->sockfd, response,
                         strlen(response), 0) == -1)
                     perror("send");
@@ -143,6 +166,7 @@ void *parser(void *args) {
             for (i = 0; i < MAXRESOURCES; i++) {
                 if (a->resources[i].id == NULL) {
                     a->resources[i] = new_resource;
+                    logMessage("Client create a new resource");
                     if (send(a->sockfd, "resource created\n",
                              strlen("resource created\n"), 0) == -1) 
                         perror("send");
@@ -153,6 +177,7 @@ void *parser(void *args) {
             if (i == MAXRESOURCES) {
                 free(new_resource.id);    /* avoid leak if we couldn't store it */
                 free(new_resource.value);
+                logMessage("ERROR: Client tried to create a new resource but the base is full");
                 if (send(a->sockfd, "ERROR: full of resources\n",
                          strlen("ERROR: full of resources\n"), 0) == -1)
                     perror("send");
@@ -179,13 +204,14 @@ void *parser(void *args) {
                     if (a->resources[i].reserved_by == a->sockfd) {
                         free(a->resources[i].value);
                         a->resources[i].value = strdup(value_token);
-
+                        logMessage("Client changed the value of a resource");
                         if (send(a->sockfd, "value changed\n",
                                 strlen("value changed\n"), 0) == -1) 
                             perror("send");
                         break;
                     }
                     else {
+                        logMessage("ERROR: Client tried to change the value of a resource without own reservation");
                         if (a->resources[i].reserved == 0) {
                             if (send(a->sockfd, "ERROR: resource not reserved\n",
                                     strlen("ERROR: resource not reserved\n"), 0) == -1) 
@@ -202,6 +228,7 @@ void *parser(void *args) {
             }
             
             if (i == MAXRESOURCES) {
+                logMessage("ERROR: Client tried to change the value of a resource that doesn't exit");
                 if (send(a->sockfd, "ERROR: resource not found\n",
                         strlen("ERROR: resource not found\n"), 0) == -1)
                     perror("send");
@@ -219,10 +246,12 @@ void *parser(void *args) {
                     if (a->resources[i].reserved == 0) {
                         a->resources[i].reserved    = 1;
                         a->resources[i].reserved_by = a->sockfd;
+                        logMessage("Client reserved a resource");
                         if (send(a->sockfd, "resource reserved\n",
                                  strlen("resource reserved\n"), 0) == -1) 
                             perror("send");
                     } else {
+                        logMessage("ERROR: Client tried to reserve an already reserved resource");
                         if (send(a->sockfd, "ERROR: Resource already reserved\n",
                                  strlen("ERROR: Resource already reserved\n"), 0) == -1) 
                         perror("send");
@@ -233,6 +262,7 @@ void *parser(void *args) {
             }
 
             if (found == 0) {
+                logMessage("ERROR: Client tried to reserve non existent resource");
                 if (send(a->sockfd, "ERROR: Resource doesn't exist\n",
                          strlen("ERROR: Resource doesn't exist\n"), 0) == -1) 
                     perror("send");
@@ -251,10 +281,12 @@ void *parser(void *args) {
                     if (a->resources[i].reserved == 1) {
                         a->resources[i].reserved    = 0;
                         a->resources[i].reserved_by = 0; 
+                        logMessage("Client released resource");
                         if (send(a->sockfd, "resource released\n",
                                  strlen("resource released\n"), 0) == -1)
                             perror("send");
                     } else {
+                        logMessage("ERROR: Client tried to release non reserved resource");
                         if (send(a->sockfd, "ERROR: Resource not reserved\n",
                                  strlen("ERROR: Resource not reserved\n"), 0) == -1) 
                             perror("send");
@@ -265,6 +297,7 @@ void *parser(void *args) {
             }
 
             if (found == 0) {
+                logMessage("ERROR: Client tried to release non existent resource");
                 if (send(a->sockfd, "ERROR: Resource doesn't exist\n",
                          strlen("ERROR: Resource doesn't exist\n"), 0) == -1) 
                     perror("send");
@@ -293,13 +326,14 @@ void *parser(void *args) {
                     any = 1;
                 }
             }
-
+            
             if (!any) {
                 strncpy(response, "no resources\n", sizeof(response) - 1);
             }
 
             if (send(a->sockfd, response, strlen(response), 0) == -1) 
                 perror("send");
+            logMessage("Client listed the resources");
         }
 
         else if (strcmp(token, "EXIT") == 0) {
@@ -310,6 +344,7 @@ void *parser(void *args) {
             pthread_mutex_unlock(a->lock);
             close(a->sockfd);
             free(a);
+            logMessage("Connection Closed");
             return NULL;
         }
 
@@ -335,11 +370,17 @@ void *parser(void *args) {
         if (a->resources[i].reserved_by == a->sockfd) {
             a->resources[i].reserved    = 0;
             a->resources[i].reserved_by = 0;
+            char l[100];
+            sprintf(l,"auto-released '%s' after client disconnect",a->resources[i].id);
+            logMessage(l);
             printf("server: auto-released '%s' after client disconnect\n",
                    a->resources[i].id);
         }
     }
     pthread_mutex_unlock(a->lock);
+    char l[100];
+    sprintf(l,"client on sockfd %d disconnected\n", a->sockfd);
+    logMessage(l);
 
     printf("server: client on sockfd %d disconnected\n", a->sockfd);
     close(a->sockfd);
@@ -421,6 +462,9 @@ int main(void) {
         inet_ntop(their_addr.ss_family,
             get_in_addr((struct sockaddr *)&their_addr), s, sizeof s);
         printf("server: got connection from %s (sockfd=%d)\n", s, new_fd);
+        char l[100];
+        sprintf(l,"got connection from %s (sockfd=%d)", s, new_fd);
+        logMessage(l);
         fflush(stdout);
 
         pthread_detach(thread);
