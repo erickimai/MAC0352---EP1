@@ -59,6 +59,16 @@ void logMessage(char* msg){
     fclose(f);
 }
 
+// returns the resource by the id, note that if id is NULL returns the first resouce "empty"
+Resource *findResource(Resource *resources,char* id){
+    for (int i = 0; i < MAXRESOURCES; i++) {
+        if ((resources[i].id != NULL && id != NULL && strcmp(id, resources[i].id) == 0) ||
+            (resources[i].id == NULL && id == NULL)) 
+            return &resources[i];
+    }
+    return NULL;
+}
+
 void *get_in_addr(struct sockaddr *sa)
 {
     if (sa->sa_family == AF_INET) {
@@ -162,26 +172,37 @@ void *parser(void *args) {
             new_resource.id          = strdup(id_token);
             new_resource.value       = strdup(value_token);
 
-            int i;
-            for (i = 0; i < MAXRESOURCES; i++) {
-                if (a->resources[i].id == NULL) {
-                    a->resources[i] = new_resource;
-                    logMessage("Client create a new resource");
-                    if (send(a->sockfd, "resource created\n",
-                             strlen("resource created\n"), 0) == -1) 
-                        perror("send");
-                    break;
-                }
-            }
+            if (findResource(a->resources, new_resource.id) != NULL)
+            {
+                logMessage("ERROR: Client tried to create a new resource with an id already used");
+                if (send(a->sockfd, "ERROR: id already used\n",
+                         strlen("ERROR: id already used\n"), 0) == -1)
+                    perror("send");
 
-            if (i == MAXRESOURCES) {
+                pthread_mutex_unlock(a->lock);
+                continue;
+            }
+            
+            Resource *r = findResource(a->resources, NULL);
+
+            if (r == NULL) {
                 free(new_resource.id);    /* avoid leak if we couldn't store it */
                 free(new_resource.value);
                 logMessage("ERROR: Client tried to create a new resource but the base is full");
                 if (send(a->sockfd, "ERROR: full of resources\n",
                          strlen("ERROR: full of resources\n"), 0) == -1)
                     perror("send");
+                pthread_mutex_unlock(a->lock);
+                continue;
             }
+
+            *r = new_resource;
+            logMessage("Client create a new resource");
+            if (send(a->sockfd, "resource created\n",
+                        strlen("resource created\n"), 0) == -1) 
+                perror("send");
+
+            
         }
 
         /* ---- SET <id> <value> ---- */
