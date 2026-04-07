@@ -300,12 +300,21 @@ void *parser(void *args) {
                     strcmp(id_token, a->resources[i].id) == 0) {
 
                     if (a->resources[i].reserved == 1) {
-                        a->resources[i].reserved    = 0;
-                        a->resources[i].reserved_by = 0; 
-                        logMessage("Client released resource");
-                        if (send(a->sockfd, "resource released\n",
-                                 strlen("resource released\n"), 0) == -1)
-                            perror("send");
+
+                        if (a->resources[i].reserved_by == a->sockfd) {
+                        
+                            a->resources[i].reserved    = 0;
+                            a->resources[i].reserved_by = 0; 
+                            logMessage("Client released resource");
+                            if (send(a->sockfd, "resource released\n",
+                                    strlen("resource released\n"), 0) == -1)
+                                perror("send");
+                        } else {
+                            logMessage("ERROR: Client tried to release a resource without own reservation");
+                            if (send(a->sockfd, "ERROR: resource not reserved by you\n",
+                                    strlen("ERROR: Resource not reserved by you\n"), 0) == -1) 
+                                perror("send");
+                        }
                     } else {
                         logMessage("ERROR: Client tried to release non reserved resource");
                         if (send(a->sockfd, "ERROR: Resource not reserved\n",
