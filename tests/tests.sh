@@ -1,5 +1,10 @@
 #!/bin/sh
 
+touch WebServer.log WebClient.log
+# Tem que permitir a escrita nos logs
+chmod 666 WebServer.log
+chmod 666 WebClient.log
+
 read -p "Enter tests: (1 - simple tests; 2 - concurrence between clients; \
 3 - failure or auto-release; 4 - overload of clients)" test_set
 
@@ -43,9 +48,19 @@ case $test_set in
 
     2)
     {
-        echo "not implemented yet"
+        echo "CREATE memory 99"
+        echo "RESERVE memory"
+        echo "SET memory 100"
+        echo "EXIT"
+    } | ../WebClient localhost &
+
+    {
+        echo "CREATE memory 99"
+        echo "RESERVE memory"
+        echo "SET memory 100"
         echo "EXIT"
     } | ../WebClient localhost
+
     ;;
 
     # 'Test Set 3: Failure'

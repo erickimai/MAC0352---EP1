@@ -1,5 +1,6 @@
 WebClient 
 WebClient.o
+WebClient.log
 WebServer 
 WebServer.o
 WebServer.log
