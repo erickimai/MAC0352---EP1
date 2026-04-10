@@ -1,41 +1,51 @@
-[2026-04-09 10:02:29]:	got connection from 127.0.0.1 (sockfd=4)
-[2026-04-09 10:02:29]:	Client create a new resource
-[2026-04-09 10:02:30]:	Client got a resource
-[2026-04-09 10:02:31]:	Client listed the resources
-[2026-04-09 10:02:32]:	Client create a new resource
-[2026-04-09 10:02:33]:	Client reserved a resource
-[2026-04-09 10:02:34]:	Client got a resource
-[2026-04-09 10:02:35]:	Client reserved a resource
-[2026-04-09 10:02:36]:	Client changed the value of a resource
-[2026-04-09 10:02:37]:	Client got a resource
-[2026-04-09 10:02:38]:	Client listed the resources
-[2026-04-09 10:02:39]:	Client released resource
-[2026-04-09 10:02:40]:	Connection Closed
-[2026-04-09 10:44:55]:	got connection from 127.0.0.1 (sockfd=4)
-[2026-04-09 10:44:55]:	ERROR: Client tried to reserve non existent resource
-[2026-04-09 10:44:55]:	ERROR: Client tried to change the value of a resource that doesn't exit
-[2026-04-09 10:44:55]:	Connection Closed
-[2026-04-09 10:44:55]:	got connection from 127.0.0.1 (sockfd=5)
-[2026-04-09 10:44:55]:	ERROR: Client tried to reserve non existent resource
-[2026-04-09 10:44:55]:	ERROR: Client tried to change the value of a resource that doesn't exit
-[2026-04-09 10:44:55]:	Connection Closed
-[2026-04-09 10:45:39]:	got connection from 127.0.0.1 (sockfd=4)
-[2026-04-09 10:45:39]:	Client create a new resource
-[2026-04-09 10:45:39]:	Client reserved a resource
-[2026-04-09 10:45:39]:	Client changed the value of a resource
-[2026-04-09 10:45:39]:	Connection Closed
-[2026-04-09 10:45:39]:	got connection from 127.0.0.1 (sockfd=5)
-[2026-04-09 10:45:39]:	ERROR: Client tried to create a new resource with an id already used
-[2026-04-09 10:45:39]:	ERROR: Client tried to reserve an already reserved resource
-[2026-04-09 10:45:39]:	ERROR: Client tried to change the value of a resource without own reservation
-[2026-04-09 10:45:39]:	Connection Closed
-[2026-04-09 10:46:45]:	got connection from 127.0.0.1 (sockfd=4)
-[2026-04-09 10:46:45]:	Client create a new resource
-[2026-04-09 10:46:45]:	got connection from 127.0.0.1 (sockfd=5)
-[2026-04-09 10:46:45]:	ERROR: Client tried to create a new resource with an id already used
-[2026-04-09 10:46:45]:	Client reserved a resource
-[2026-04-09 10:46:45]:	ERROR: Client tried to reserve an already reserved resource
-[2026-04-09 10:46:45]:	Client changed the value of a resource
-[2026-04-09 10:46:45]:	ERROR: Client tried to change the value of a resource without own reservation
-[2026-04-09 10:46:45]:	Connection Closed
-[2026-04-09 10:46:45]:	Connection Closed
+[2026-04-10 13:17:14]:	got connection from 127.0.0.1 (sockfd=4)
+[2026-04-10 13:17:14]:	got connection from 127.0.0.1 (sockfd=5)
+[2026-04-10 13:17:14]:	got connection from 127.0.0.1 (sockfd=6)
+[2026-04-10 13:17:14]:	got connection from 127.0.0.1 (sockfd=7)
+[2026-04-10 13:17:14]:	got connection from 127.0.0.1 (sockfd=8)
+[2026-04-10 13:17:14]:	got connection from 127.0.0.1 (sockfd=9)
+[2026-04-10 13:17:14]:	got connection from 127.0.0.1 (sockfd=10)
+[2026-04-10 13:17:14]:	got connection from 127.0.0.1 (sockfd=11)
+[2026-04-10 13:17:14]:	got connection from 127.0.0.1 (sockfd=12)
+[2026-04-10 13:17:14]:	got connection from 127.0.0.1 (sockfd=13)
+[2026-04-10 13:17:15]:	Client create a new resource
+[2026-04-10 13:17:15]:	Client create a new resource
+[2026-04-10 13:17:15]:	Client create a new resource
+[2026-04-10 13:17:15]:	Client create a new resource
+[2026-04-10 13:17:15]:	Client create a new resource
+[2026-04-10 13:17:15]:	Client create a new resource
+[2026-04-10 13:17:15]:	Client create a new resource
+[2026-04-10 13:17:15]:	Client create a new resource
+[2026-04-10 13:17:15]:	Client create a new resource
+[2026-04-10 13:17:15]:	Client create a new resource
+[2026-04-10 13:17:16]:	Client reserved a resource
+[2026-04-10 13:17:16]:	Client reserved a resource
+[2026-04-10 13:17:16]:	Client reserved a resource
+[2026-04-10 13:17:16]:	Client reserved a resource
+[2026-04-10 13:17:16]:	Client reserved a resource
+[2026-04-10 13:17:16]:	Client reserved a resource
+[2026-04-10 13:17:16]:	Client reserved a resource
+[2026-04-10 13:17:16]:	Client reserved a resource
+[2026-04-10 13:17:16]:	Client reserved a resource
+[2026-04-10 13:17:16]:	Client reserved a resource
+[2026-04-10 13:17:17]:	Client listed the resources
+[2026-04-10 13:17:17]:	Client listed the resources
+[2026-04-10 13:17:17]:	Client listed the resources
+[2026-04-10 13:17:17]:	Client listed the resources
+[2026-04-10 13:17:17]:	Client listed the resources
+[2026-04-10 13:17:17]:	Client listed the resources
+[2026-04-10 13:17:17]:	Client listed the resources
+[2026-04-10 13:17:17]:	Client listed the resources
+[2026-04-10 13:17:17]:	Client listed the resources
+[2026-04-10 13:17:17]:	Client listed the resources
+[2026-04-10 13:17:18]:	Connection Closed
+[2026-04-10 13:17:18]:	Connection Closed
+[2026-04-10 13:17:18]:	Connection Closed
+[2026-04-10 13:17:18]:	Connection Closed
+[2026-04-10 13:17:18]:	Connection Closed
+[2026-04-10 13:17:18]:	Connection Closed
+[2026-04-10 13:17:18]:	Connection Closed
+[2026-04-10 13:17:18]:	Connection Closed
+[2026-04-10 13:17:18]:	Connection Closed
+[2026-04-10 13:17:18]:	Connection Closed
+

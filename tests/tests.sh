@@ -66,19 +66,71 @@ case $test_set in
     # 'Test Set 3: Failure'
 
     3)
+    # Cria arquivo temporário com comandos do cliente escritor
+    tmp=$(mktemp)
+    echo "CREATE cachorro 1" >> "$tmp"
+    echo "RESERVE cachorro" >> "$tmp"
+    echo "CREATE gato 2" >> "$tmp"
+    echo "RESERVE gato" >> "$tmp"
+
+    (cat "$tmp"; sleep 2) | ../WebClient localhost &
+    WRITER_PID=$!
+
+    sleep 2
+
+    # Mata abruptamente — sem EXIT, força auto-release no servidor
+    kill -9 $WRITER_PID
+    wait $WRITER_PID 2>/dev/null
+
+    sleep 1  # dá tempo do servidor processar a desconexão
+
+    # Cliente observador tenta reservar os recursos liberados
     {
-        echo "not implemented yet"
+        echo "LIST"
+        echo "RESERVE cachorro"
+        sleep 1
+        echo "RESERVE gato"
+        sleep 1
+        echo "LIST"
+        sleep 1
         echo "EXIT"
     } | ../WebClient localhost
+
+    rm "$tmp"
     ;;
 
     # 'Test Set 4: Overload'
 
     4)
-    {
-        echo "not implemented yet"
+    FIFOS=()
+    PIDS=()
+
+    for i in $(seq 1 10); do
+        fifo=$(mktemp -u)
+        mkfifo "$fifo"
+        FIFOS+=("$fifo")
+        
+        ../WebClient localhost < "$fifo" &
+        PIDS+=($!)
+        
+        {
+        sleep 1
+        echo "CREATE id${i} ${i}"
+        sleep 1
+        echo "RESERVE id${i}"
+        sleep 1
+        echo "LIST"
+        sleep 1
         echo "EXIT"
-    } | ../WebClient localhost
+        sleep 1        # mantém o fifo aberto para o recv do EXIT completar
+        } > "$fifo" &
+    done
+
+    wait "${PIDS[@]}"  # espera os WebClients
+
+    for fifo in "${FIFOS[@]}"; do
+        rm -f "$fifo"
+    done
     ;;
 
     *)
@@ -87,4 +139,4 @@ case $test_set in
 
 esac
 
-kill $SERVER_PID
+kill -9 $SERVER_PID
