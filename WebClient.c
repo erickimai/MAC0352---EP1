@@ -6,6 +6,7 @@
 #include <netdb.h>
 #include <sys/types.h>
 #include <netinet/in.h>
+#include <netinet/tcp.h>
 #include <sys/socket.h>
 
 #include <arpa/inet.h>
@@ -82,7 +83,7 @@ int main(int argc, char *argv[])
 
     while(1) {
         fgets(buf, MAXDATASIZE, stdin);
-        if (strcmp(buf, "exit") == 0)
+        if (strncmp(buf, "exit", 4) == 0)
             break;
 
         if (send(sockfd, buf, strlen(buf), 0) == -1)
