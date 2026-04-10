@@ -1,1 +1,87 @@
-./tests/tests.sh: 3: ../WebServer: Permission denied
+[2026-04-09 10:09:54]:	got connection from 127.0.0.1 (sockfd=4)
+[2026-04-09 10:10:04]:	got connection from 127.0.0.1 (sockfd=5)
+[2026-04-09 10:13:29]:	Connection Closed
+[2026-04-09 10:13:34]:	Connection Closed
+[2026-04-09 10:14:15]:	got connection from 127.0.0.1 (sockfd=4)
+[2026-04-09 10:16:52]:	got connection from 127.0.0.1 (sockfd=4)
+[2026-04-09 10:16:57]:	Connection Closed
+[2026-04-09 10:27:33]:	got connection from 127.0.0.1 (sockfd=5)
+[2026-04-09 10:27:37]:	Client create a new resource
+[2026-04-09 10:27:41]:	client on sockfd 5 disconnected
+
+[2026-04-09 10:27:43]:	got connection from 127.0.0.1 (sockfd=4)
+[2026-04-09 10:27:57]:	ERROR: Client tried to create a new resource with an id already used
+[2026-04-09 10:28:01]:	client on sockfd 4 disconnected
+
+[2026-04-09 10:33:58]:	got connection from 127.0.0.1 (sockfd=4)
+[2026-04-09 13:56:49]:	got connection from 127.0.0.1 (sockfd=4)
+[2026-04-09 13:56:56]:	Client create a new resource
+[2026-04-09 13:57:00]:	Client create a new resource
+[2026-04-09 13:57:03]:	Client create a new resource
+[2026-04-09 13:57:04]:	Client listed the resources
+[2026-04-09 13:57:34]:	Connection Closed
+[2026-04-09 13:59:14]:	got connection from 127.0.0.1 (sockfd=4)
+[2026-04-09 13:59:17]:	Client create a new resource
+[2026-04-09 13:59:20]:	Client create a new resource
+[2026-04-09 13:59:21]:	Client listed the resources
+[2026-04-09 13:59:29]:	Connection Closed
+[2026-04-09 14:00:12]:	got connection from 127.0.0.1 (sockfd=4)
+[2026-04-09 14:00:15]:	Client create a new resource
+[2026-04-09 14:00:19]:	Client create a new resource
+[2026-04-09 14:00:20]:	Client listed the resources
+[2026-04-09 14:00:28]:	client on sockfd 4 disconnected
+
+[2026-04-09 14:08:32]:	got connection from 127.0.0.1 (sockfd=4)
+[2026-04-09 14:08:37]:	Client create a new resource
+[2026-04-09 14:08:42]:	Client create a new resource
+[2026-04-09 14:08:44]:	Client listed the resources
+[2026-04-09 14:12:49]:	client on sockfd 4 disconnected
+
+[2026-04-09 14:13:10]:	got connection from 127.0.0.1 (sockfd=4)
+[2026-04-09 14:13:12]:	Client create a new resource
+[2026-04-09 14:13:15]:	Client create a new resource
+[2026-04-09 14:13:17]:	Client listed the resources
+[2026-04-09 14:13:26]:	client on sockfd 4 disconnected
+
+[2026-04-09 14:22:40]:	got connection from 127.0.0.1 (sockfd=4)
+[2026-04-09 14:22:45]:	got connection from 127.0.0.1 (sockfd=5)
+[2026-04-09 14:22:54]:	Client create a new resource
+[2026-04-09 14:22:59]:	Client create a new resource
+[2026-04-09 14:23:01]:	Client listed the resources
+[2026-04-09 14:23:08]:	Client reserved a resource
+[2026-04-09 14:23:12]:	ERROR: Client tried to release non reserved resource
+[2026-04-09 14:23:18]:	Client reserved a resource
+[2026-04-09 14:23:27]:	auto-released 'eu1' after client disconnect
+[2026-04-09 14:23:27]:	client on sockfd 4 disconnected
+
+[2026-04-09 14:23:30]:	got connection from 127.0.0.1 (sockfd=6)
+[2026-04-09 14:23:38]:	Client released resource
+[2026-04-09 14:23:44]:	ERROR: Client tried to release non reserved resource
+[2026-04-09 14:23:48]:	Client listed the resources
+[2026-04-09 14:23:56]:	Client reserved a resource
+[2026-04-09 14:24:01]:	Client released resource
+[2026-04-09 14:24:06]:	Client listed the resources
+[2026-04-09 14:24:11]:	Client reserved a resource
+[2026-04-09 14:24:15]:	Client listed the resources
+[2026-04-09 14:24:28]:	Client released resource
+[2026-04-09 14:24:55]:	Client listed the resources
+[2026-04-09 14:24:59]:	client on sockfd 6 disconnected
+
+[2026-04-09 14:25:00]:	client on sockfd 5 disconnected
+
+[2026-04-09 14:25:24]:	got connection from 127.0.0.1 (sockfd=4)
+[2026-04-09 14:25:25]:	got connection from 127.0.0.1 (sockfd=5)
+[2026-04-09 14:25:30]:	Client create a new resource
+[2026-04-09 14:25:34]:	Client create a new resource
+[2026-04-09 14:25:35]:	Client listed the resources
+[2026-04-09 14:25:43]:	Client reserved a resource
+[2026-04-09 14:25:48]:	Client reserved a resource
+[2026-04-09 14:25:59]:	ERROR: Client tried to release a resource without own reservation
+[2026-04-09 14:26:03]:	Client released resource
+[2026-04-09 14:26:05]:	Client listed the resources
+[2026-04-09 14:26:10]:	Client released resource
+[2026-04-09 14:26:12]:	Client listed the resources
+[2026-04-09 14:26:13]:	client on sockfd 4 disconnected
+
+[2026-04-09 14:26:14]:	client on sockfd 5 disconnected
+

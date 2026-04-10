@@ -50,6 +50,11 @@ typedef struct {
 
 void logMessage(char* msg){
     FILE* f = fopen(LOGFILE,"a");
+
+    if (f == NULL) {
+        perror("logMessage: fopen");
+        return;
+    }
     
     time_t t = time(NULL);
     struct tm tm = *localtime(&t);
@@ -256,6 +261,7 @@ void *parser(void *args) {
             }
         }
 
+        /* ---- RESERVE <id> ---- */
         else if (strcmp(token, "RESERVE") == 0) {
             char *id_token = strtok_r(NULL, " ", &saveptr);
             int found = 0;
@@ -300,12 +306,20 @@ void *parser(void *args) {
                     strcmp(id_token, a->resources[i].id) == 0) {
 
                     if (a->resources[i].reserved == 1) {
-                        a->resources[i].reserved    = 0;
-                        a->resources[i].reserved_by = 0; 
-                        logMessage("Client released resource");
-                        if (send(a->sockfd, "resource released\n",
-                                 strlen("resource released\n"), 0) == -1)
-                            perror("send");
+                        if (a->resources[i].reserved_by == a->sockfd) {
+                            a->resources[i].reserved    = 0;
+                            a->resources[i].reserved_by = 0; 
+                            logMessage("Client released resource");
+                            if (send(a->sockfd, "resource released\n",
+                                     strlen("resource released\n"), 0) == -1)
+                                perror("send");
+
+                        } else {
+                            logMessage("ERROR: Client tried to release a resource of another client");
+                            if (send(a->sockfd, "ERROR: resource not reserved by you\n",
+                                     strlen("ERROR: resource not reserved by you\n"), 0) == -1)
+                                perror("send");
+                        }
                     } else {
                         logMessage("ERROR: Client tried to release non reserved resource");
                         if (send(a->sockfd, "ERROR: Resource not reserved\n",
@@ -325,10 +339,14 @@ void *parser(void *args) {
             }
         }
 
+        /* ---- LIST ---- */
         else if (strcmp(token, "LIST") == 0) {
             char response[MAXDATASIZE] = "";
             char entry[256];
             int any = 0;
+            snprintf(response, sizeof(response),
+                        "list of resources:\n"
+            );
 
             for (int i = 0; i < MAXRESOURCES; i++) {
                 if (a->resources[i].id != NULL) {
