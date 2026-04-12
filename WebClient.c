@@ -8,12 +8,20 @@
 #include <netinet/in.h>
 #include <netinet/tcp.h>
 #include <sys/socket.h>
+// #include <sys/time.h>
+// #include <time.h>
 
 #include <arpa/inet.h>
 
 #define PORT "6789" // the port client will be connecting to 
 
 #define MAXDATASIZE 1000 // max number of bytes we can get at once 
+
+// long get_time_ms(void) {
+//     struct timespec ts;
+//     clock_gettime(CLOCK_MONOTONIC, &ts);
+//     return ts.tv_sec * 1000L + ts.tv_nsec / 1000000L;
+// }
 
 // get sockaddr, IPv4 or IPv6:
 void *get_in_addr(struct sockaddr *sa)
@@ -88,11 +96,16 @@ int main(int argc, char *argv[])
 
         if (send(sockfd, buf, strlen(buf), 0) == -1)
             perror("send");
+        // long t_start = get_time_ms();
 
         if ((numbytes = recv(sockfd, buf, MAXDATASIZE-1, 0)) == -1) {
             perror("recv");
             exit(1);
         }
+
+        // long t_end = get_time_ms();
+        // long latency = t_end - t_start;
+        // printf("latency: %ldms \n", latency);
 
         buf[numbytes] = '\0';
         if (strcmp(buf, "connection ended\n") == 0)
