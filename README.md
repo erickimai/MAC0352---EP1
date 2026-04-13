@@ -4,6 +4,9 @@ Esta tarefa trabalha com programação com soquetes e implementa um protocolo
 entre cliente e servidor TCP. Se refere ao curso de Redes de Computadores e Sistemas Distribuídos,
 oferecido em 2026 no IME-USP.
 
+O relatório do que foi feito está em 'relatorio - Serviço de Coordenação Distribuída Com Soquetes TCP.pdf',
+enquanto a apresentação de slides em 'Sistema Cliente-Servidor.pdf'
+
 ## Compilação e Execução
 Compilar o servidor: gcc -o WebServer WebServer.c -lpthread
 Compilar o cliente: gcc -o client WebClient.c
